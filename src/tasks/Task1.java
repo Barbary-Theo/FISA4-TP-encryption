@@ -22,18 +22,25 @@ public class Task1 {
 
 		SecretKey key = generateSecretKey();
 
+		byte [] ivBytes = new byte[GCM_IV_SIZE];
+		generateRandomIV(ivBytes);
+
+		File in = new File("src/main/resources/files/Task1_fileToEncrypt");
+		File encrypted = new File("src/main/resources/files/Task1_fileToEncrypt_encrypted.txt");
+		File decrypted = new File("src/main/resources/files/Task1_file_decrypted.txt");
+
 		encryptFileWithAES(
-				new File("src/main/resources/files/Task1_fileToEncrypt_encrypted.txt"),
+				encrypted,
 				key,
 				new byte[GCM_IV_SIZE],
-				new File("src/main/resources/files/Task1_fileToEncrypt")
+				in
 		);
 
 		decryptFileWithAES(
-				new File("src/main/resources/files/Task1_file_decrypted.txt"),
+				decrypted,
 				key,
 				new byte[GCM_IV_SIZE],
-				new File("src/main/resources/files/Task1_fileToEncrypt_encrypted.txt")
+				encrypted
 		);
 
 	}
@@ -47,49 +54,54 @@ public class Task1 {
 
 	/* must use SecureRandom class*/
 	public static void generateRandomIV(byte [] ivBytes) throws Exception {
-		SecureRandom random = SecureRandom.getInstanceStrong();
-		random.nextBytes(ivBytes);
+		new SecureRandom().nextBytes(ivBytes);
 	}
 
 	public static void encryptFileWithAES(File out, SecretKey key, byte [] ivBytes, File in) throws Exception {
 
-		generateRandomIV(ivBytes);
-		Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+		Cipher cipher = Cipher.getInstance("AES");
+		cipher.init(Cipher.ENCRYPT_MODE, key);
 
-		GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(GCM_TAG_SIZE, ivBytes);
-		cipher.init(Cipher.ENCRYPT_MODE, key, gcmParameterSpec);
-		InputStream reader = new FileInputStream(in.getPath());
+		FileInputStream inputStream = new FileInputStream(in);
+		FileOutputStream outputStream = new FileOutputStream(out);
+		byte[] buffer = new byte[64];
 
-		byte[] cipherText = cipher.doFinal(reader.readAllBytes());
+		int bytesRead;
+		while ((bytesRead = inputStream.read(buffer)) != -1) {
+			byte[] output = cipher.update(buffer, 0, bytesRead);
+			if (output != null) outputStream.write(output);
+		}
 
-		FileOutputStream writer = new FileOutputStream(out);
-		writer.write(cipherText);
+		byte[] outputBytes = cipher.doFinal();
+		if (outputBytes != null) outputStream.write(outputBytes);
 
-		writer.close();
-		reader.close();
+		inputStream.close();
+		outputStream.close();
 	}
 
 	public static void decryptFileWithAES(File out, SecretKey aesKey, byte[] ivBytes, File in) throws Exception {
 
-		File file = new File(in.getPath());
-		InputStream reader = new FileInputStream(file);
-		ByteBuffer byteBuffer = ByteBuffer.wrap(reader.readAllBytes());
-		byteBuffer.get(GCM_IV_SIZE);
+		Cipher cipher = Cipher.getInstance("AES");
+		cipher.init(Cipher.DECRYPT_MODE, aesKey);
 
-		//get the rest of encrypted data
-		byte[] cipherBytes = new byte[byteBuffer.remaining()];
-		byteBuffer.get(cipherBytes);
+		FileInputStream inputStream = new FileInputStream(in);
+		FileOutputStream outputStream = new FileOutputStream(out);
+		byte[] buffer = new byte[64];
 
-		Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-		GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(GCM_TAG_SIZE, ivBytes);
-		cipher.init(Cipher.DECRYPT_MODE, aesKey, gcmParameterSpec);
+		int bytesRead;
+		while ((bytesRead = inputStream.read(buffer)) != -1) {
+			byte[] output = cipher.update(buffer, 0, bytesRead);
+			if (output != null) outputStream.write(output);
+		}
 
-		byte[] cipherText = cipher.doFinal(cipherBytes);
+		byte[] outputBytes = cipher.doFinal();
 
-		FileOutputStream writer = new FileOutputStream(out);
-		writer.write(cipherText);
+		if (outputBytes != null) outputStream.write(outputBytes);
 
-		writer.close();
-		reader.close();
+		inputStream.close();
+		outputStream.close();
+
+
+
 	}
 }
