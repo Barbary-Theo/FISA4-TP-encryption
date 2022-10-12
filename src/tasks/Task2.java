@@ -45,7 +45,17 @@ public class Task2 {
 
 		// Question 5 et 6
 
+		byte[] file1HashHMAC = computeHMAC(new File("src/main/resources/files/Task2_letter.ps"));
+		System.out.print("Hash HMAC SHA-256 file 1 : ");
+		for(byte c:file1HashHMAC)
+			System.out.print(c);
+		System.out.println();
 
+		byte[] file2HashHMAC = computeHMAC(new File("src/main/resources/files/Task2_order.ps"));
+		System.out.print("Hash HMAC SHA-256 file 2 : ");
+		for(byte c:file2HashHMAC)
+			System.out.print(c);
+		System.out.println();
 	}
 
 	public static byte[] computeMD5Hashes(File fileToHash) throws Exception {
@@ -108,28 +118,17 @@ public class Task2 {
 		Mac md = Mac.getInstance("HmacSHA256");
 		md.init(key);
 
-		FileInputStream fis = new FileInputStream(fileToHash);
-
 		try {
 			FileInputStream reader = new FileInputStream(fileToHash);
 			byte[] allBytes = reader.readAllBytes();
 
-			for(byte ele : allBytes ) {
-				System.out.println("-> " + ele);
-			}
-
+			// -> encrypted
+			return md.doFinal(allBytes);
 
 		} catch (Exception e){
 			System.out.println(e.toString());
+			return null;
 		}
-
-		byte[] contents = new byte[1024];
-		int readSize;
-		while ((readSize = in.read(contents)) != -1) {
-			md.update(contents, 0, readSize);
-		}
-		byte[] hashValue = md.doFinal();
-
 
 	}
 
