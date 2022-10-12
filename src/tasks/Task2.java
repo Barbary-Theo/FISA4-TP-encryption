@@ -10,19 +10,33 @@ public class Task2 {
 
 		// Question 1 et 2
 
-		byte[] file1Hash = computeMD5Hashes(new File("src/main/resources/files/Task2_letter.ps"));
-		System.out.print("Hash file 1 : ");
-		for(byte c:file1Hash)
+		byte[] file1HashMD5 = computeMD5Hashes(new File("src/main/resources/files/Task2_letter.ps"));
+		System.out.print("Hash MD5 file 1 : ");
+		for(byte c:file1HashMD5)
 			System.out.print(c);
 		System.out.println();
 
 		byte[] file2Hash = computeMD5Hashes(new File("src/main/resources/files/Task2_order.ps"));
-		System.out.print("Hash file 2 : ");
-		for(byte c:file1Hash)
+		System.out.print("Hash MD5 file 2 : ");
+		for(byte c:file1HashMD5)
 			System.out.print(c);
 		System.out.println();
 
-		// Question 3
+		// Question 3 et 4
+
+		byte[] file1HashSHA256 = computeSHA256Hashes(new File("src/main/resources/files/Task2_letter.ps"));
+		System.out.print("Hash SHA-256 file 1 : ");
+		for(byte c:file1HashSHA256)
+			System.out.print(c);
+		System.out.println();
+
+		byte[] file2HashSHA256 = computeSHA256Hashes(new File("src/main/resources/files/Task2_order.ps"));
+		System.out.print("Hash SHA-256 file 2 : ");
+		for(byte c:file2HashSHA256)
+			System.out.print(c);
+		System.out.println();
+
+		// Question 5 et 6
 
 
 	}
@@ -55,11 +69,30 @@ public class Task2 {
 	}
 
 	public static byte[] computeSHA256Hashes(File fileToHash) throws Exception {
-		//Use SHA-1 algorithm
-		MessageDigest shaDigest = MessageDigest.getInstance("SHA-256");
+		MessageDigest digest = MessageDigest.getInstance("SHA-256");
+		FileInputStream fis = new FileInputStream(fileToHash);
 
-		//SHA-1 checksum
-		String shaChecksum = getFileChecksum(shaDigest, fileToHash);
+		byte[] byteArray = new byte[1024];
+		int bytesCount = 0;
+
+		while ((bytesCount = fis.read(byteArray)) != -1) {
+			digest.update(byteArray, 0, bytesCount);
+		}
+
+		fis.close();
+
+		byte[] bytes = digest.digest();
+
+		StringBuilder sb = new StringBuilder();
+
+		for (int i = 0; i < bytes.length; i++) {
+
+			sb.append(Integer
+					.toString((bytes[i] & 0xff) + 0x100, 16)
+					.substring(1));
+		}
+
+		return sb.toString().getBytes();
 	}
 
 	/*use HMAC-SHA256*/
