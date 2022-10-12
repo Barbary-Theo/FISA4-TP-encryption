@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="files_TP-Java">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/bcprov-ext-jdk18on-172.jar!/" />
+      <root url="jar://$PROJECT_DIR$/bcprov-jdk18on-172.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
