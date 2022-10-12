@@ -1,8 +1,15 @@
 package tasks;
 
+import javax.crypto.Mac;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.security.MessageDigest;
+
+import static tasks.Utils.bytesToHex;
 
 public class Task2 {
 
@@ -85,10 +92,10 @@ public class Task2 {
 
 		StringBuilder sb = new StringBuilder();
 
-		for (int i = 0; i < bytes.length; i++) {
+		for (byte aByte : bytes) {
 
 			sb.append(Integer
-					.toString((bytes[i] & 0xff) + 0x100, 16)
+					.toString((aByte & 0xff) + 0x100, 16)
 					.substring(1));
 		}
 
@@ -96,8 +103,34 @@ public class Task2 {
 	}
 
 	/*use HMAC-SHA256*/
-	public static byte[] computeHMAC(File fileToHashMac) throws Exception {
-		return null;
+	public static byte[] computeHMAC(File fileToHash) throws Exception {
+		SecretKey key = Task1.generateSecretKey();
+		Mac md = Mac.getInstance("HmacSHA256");
+		md.init(key);
+
+		FileInputStream fis = new FileInputStream(fileToHash);
+
+		try {
+			FileInputStream reader = new FileInputStream(fileToHash);
+			byte[] allBytes = reader.readAllBytes();
+
+			for(byte ele : allBytes ) {
+				System.out.println("-> " + ele);
+			}
+
+
+		} catch (Exception e){
+			System.out.println(e.toString());
+		}
+
+		byte[] contents = new byte[1024];
+		int readSize;
+		while ((readSize = in.read(contents)) != -1) {
+			md.update(contents, 0, readSize);
+		}
+		byte[] hashValue = md.doFinal();
+
+
 	}
 
 }
